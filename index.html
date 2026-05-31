@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>휴대폰 TCO 계산기 - 통신향 vs 자급제</title>
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/static/woff2/SUIT.css');
+
+    :root {
+      --bg: #f4f1ec;
+      --bg-2: #ebe7df;
+      --card: rgba(255, 255, 255, 0.86);
+      --card-solid: #ffffff;
+      --text: #1e252f;
+      --text-soft: #3b4452;
+      --muted: #7c8491;
+      --line: rgba(31, 41, 55, 0.10);
+      --line-strong: rgba(31, 41, 55, 0.16);
+      --primary: #1f3a5f;
+      --primary-2: #2f5f8f;
+      --primary-soft: #eef4fa;
+      --green: #28785f;
+      --green-soft: #edf7f2;
+      --yellow: #f1c453;
+      --yellow-2: #ffe29a;
+      --yellow-deep: #5f3b05;
+      --red: #c24a4a;
+      --radius: 22px;
+      --radius-sm: 16px;
+      --shadow: 0 18px 50px rgba(37, 45, 57, 0.10);
+      --shadow-soft: 0 8px 24px rgba(37, 45, 57, 0.07);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "SUIT", "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(31, 58, 95, 0.12), transparent 34%),
+        radial-gradient(circle at 92% 12%, rgba(241, 196, 83, 0.18), transparent 30%),
+        linear-gradient(180deg, #fbfaf7 0%, var(--bg) 48%, var(--bg-2) 100%);
+      color: var(--text);
+      letter-spacing: -0.025em;
+    }
+
+    .app {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      padding: 22px 16px 54px;
+    }
+
+    .hero {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      margin: -22px -16px 18px;
+      padding: 24px 16px 16px;
+      background: rgba(244, 241, 236, 0.82);
+      backdrop-filter: blur(22px);
+      border-bottom: 1px solid rgba(31, 41, 55, 0.08);
+    }
+
+    .hero-inner {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 8px;
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 99px;
+      background: var(--yellow);
+      box-shadow: 0 0 0 5px rgba(241, 196, 83, 0.22);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(27px, 4vw, 42px);
+      line-height: 1.08;
+      font-weight: 900;
+      letter-spacing: -0.06em;
+      color: #18212d;
+    }
+
+    .subtitle {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+      font-weight: 650;
+    }
+
+    .badge {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 13px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(31, 58, 95, 0.12);
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 850;
+      white-space: nowrap;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .result-bar {
+      display: grid;
+      grid-template-columns: 1.18fr 0.92fr 0.76fr;
+      gap: 10px;
+    }
+
+    .mini-card {
+      padding: 15px 16px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(31, 41, 55, 0.10);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .mini-label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 850;
+      margin-bottom: 7px;
+    }
+
+    .mini-value {
+      font-size: clamp(18px, 4vw, 27px);
+      font-weight: 900;
+      letter-spacing: -0.055em;
+      white-space: nowrap;
+      color: #1f2937;
+    }
+
+    .winner {
+      background: linear-gradient(135deg, #172235 0%, #243e60 100%);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      box-shadow: 0 18px 42px rgba(31, 58, 95, 0.22);
+    }
+
+    .winner .mini-label { color: rgba(255,255,255,0.70); }
+    .winner .mini-value { color: #fff; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .section {
+      background: var(--card);
+      border: 1px solid rgba(31, 41, 55, 0.10);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+    }
+
+    .section-head {
+      padding: 21px 21px 15px;
+      border-bottom: 1px solid rgba(31, 41, 55, 0.08);
+      background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.35));
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: -0.055em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #18212d;
+    }
+
+    .section-desc {
+      margin: 8px 0 0;
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--muted);
+      font-weight: 650;
+    }
+
+    .section-body {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 850;
+      color: var(--text-soft);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .input-wrap { position: relative; }
+
+    input, select {
+      width: 100%;
+      height: 50px;
+      border: 1px solid rgba(31, 41, 55, 0.12);
+      border-radius: 16px;
+      padding: 0 43px 0 15px;
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 780;
+      outline: none;
+      transition: border 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, transform 0.18s ease;
+      letter-spacing: -0.025em;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.86);
+    }
+
+    select { padding-right: 14px; cursor: pointer; }
+
+    input:focus, select:focus {
+      border-color: rgba(31, 58, 95, 0.45);
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(31, 58, 95, 0.09);
+    }
+
+    input:disabled {
+      background: rgba(238, 238, 232, 0.76);
+      color: #8b9098;
+      cursor: not-allowed;
+    }
+
+    .suffix {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 850;
+      pointer-events: none;
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 5px;
+      border-radius: 18px;
+      background: rgba(31, 41, 55, 0.055);
+      border: 1px solid rgba(31, 41, 55, 0.08);
+    }
+
+    .segmented button {
+      border: 1px solid transparent;
+      background: transparent;
+      color: #5f6775;
+      min-height: 44px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 850;
+      letter-spacing: -0.025em;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .segmented button.active {
+      border-color: rgba(31, 58, 95, 0.12);
+      background: #ffffff;
+      color: var(--primary);
+      box-shadow: 0 8px 20px rgba(31, 41, 55, 0.08);
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 11px;
+    }
+
+    .full { grid-column: 1 / -1; }
+
+    .summary {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 1.18fr 0.82fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .compare-card, .insight-card {
+      background: var(--card);
+      border: 1px solid rgba(31, 41, 55, 0.10);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+    }
+
+    .card-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid rgba(31, 41, 55, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.34);
+    }
+
+    .card-head h2 {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: -0.055em;
+      color: #18212d;
+    }
+
+    .reset-btn, .print-btn {
+      border: 1px solid rgba(31, 41, 55, 0.12);
+      background: rgba(255, 255, 255, 0.72);
+      border-radius: 999px;
+      padding: 9px 13px;
+      font-size: 13px;
+      font-weight: 850;
+      cursor: pointer;
+      color: #334155;
+      transition: 0.18s ease;
+    }
+
+    .reset-btn:hover, .print-btn:hover { transform: translateY(-1px); }
+
+    .print-btn {
+      background: #192233;
+      color: #fff;
+      border-color: #192233;
+      box-shadow: 0 10px 20px rgba(25, 34, 51, 0.14);
+    }
+
+    .btn-row { display: flex; gap: 8px; align-items: center; }
+
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 640px;
+    }
+
+    th, td {
+      padding: 14px 17px;
+      border-bottom: 1px solid rgba(31, 41, 55, 0.08);
+      text-align: right;
+      font-size: 14px;
+      font-weight: 720;
+      white-space: nowrap;
+    }
+
+    th:first-child, td:first-child {
+      text-align: left;
+      color: #4b5563;
+    }
+
+    th {
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.48);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    tr.total-row td {
+      font-size: 17px;
+      font-weight: 900;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.74);
+    }
+
+    .good { color: var(--green) !important; }
+    .bad { color: var(--red) !important; }
+    .blue { color: var(--primary) !important; }
+
+    .insight-body {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .big-diff {
+      border-radius: 22px;
+      padding: 20px;
+      background: linear-gradient(135deg, #edf7f2 0%, #f8fcfa 100%);
+      border: 1px solid rgba(40, 120, 95, 0.16);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.74);
+    }
+
+    .big-diff.tel {
+      background: linear-gradient(135deg, #eef4fa 0%, #f9fbfd 100%);
+      border-color: rgba(31, 58, 95, 0.16);
+    }
+
+    .big-diff.neutral {
+      background: linear-gradient(135deg, #fff8e9 0%, #fffdf8 100%);
+      border-color: rgba(241, 196, 83, 0.28);
+    }
+
+    .diff-label {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 900;
+      margin-bottom: 7px;
+    }
+
+    .diff-value {
+      font-size: clamp(27px, 5vw, 39px);
+      font-weight: 900;
+      letter-spacing: -0.07em;
+      line-height: 1.05;
+      color: #18212d;
+    }
+
+    .saving-card {
+      position: relative;
+      overflow: hidden;
+      padding: 19px 17px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #ffe9a8 0%, #f2c85b 52%, #e6b642 100%);
+      border: 1px solid rgba(126, 83, 11, 0.18);
+      box-shadow: 0 18px 34px rgba(127, 83, 11, 0.18);
+    }
+
+    .saving-card::after {
+      content: "";
+      position: absolute;
+      top: -60px;
+      right: -44px;
+      width: 120px;
+      height: 120px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.22);
+    }
+
+    .saving-card .saving-label {
+      position: relative;
+      z-index: 1;
+      font-size: 13px;
+      color: #70450a;
+      font-weight: 950;
+      margin-bottom: 8px;
+    }
+
+    .saving-card .saving-value {
+      position: relative;
+      z-index: 1;
+      font-size: clamp(32px, 7vw, 46px);
+      font-weight: 950;
+      letter-spacing: -0.085em;
+      line-height: 1.02;
+      color: #4b2b02;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.52);
+    }
+
+    .saving-card .saving-sub {
+      position: relative;
+      z-index: 1;
+      margin-top: 9px;
+      font-size: 13px;
+      color: #5c3907;
+      font-weight: 820;
+      line-height: 1.48;
+    }
+
+    .message {
+      padding: 15px 16px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.64);
+      border: 1px solid rgba(31, 41, 55, 0.09);
+      color: #3b4452;
+      font-size: 14px;
+      line-height: 1.62;
+      font-weight: 690;
+    }
+
+    .check-list {
+      display: grid;
+      gap: 9px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      color: #5f6775;
+      font-size: 13px;
+      line-height: 1.5;
+      font-weight: 680;
+    }
+
+    .check-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(31, 58, 95, 0.09);
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 950;
+      flex: 0 0 auto;
+      margin-top: 1px;
+    }
+
+    .note {
+      margin-top: 16px;
+      padding: 15px 17px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.54);
+      border: 1px dashed rgba(31, 41, 55, 0.18);
+      color: #747c88;
+      font-size: 13px;
+      line-height: 1.58;
+      font-weight: 670;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 860px) {
+      .app { padding: 18px 13px 44px; }
+      .grid, .summary { grid-template-columns: 1fr; }
+      .result-bar { grid-template-columns: 1fr; }
+      .title-row { flex-direction: column; }
+      .badge { align-self: flex-start; }
+      .hero { position: relative; }
+      .two-col { grid-template-columns: 1fr; }
+      table { min-width: 560px; }
+      .section-head { padding: 19px 18px 14px; }
+      .section-body, .insight-body { padding: 16px; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .app { padding: 0; width: 100%; }
+      .hero { position: static; margin: 0 0 10px; padding: 0; background: #fff; border: none; }
+      .grid, .note, .btn-row, .reset-btn, .print-btn { display: none !important; }
+      .summary { grid-template-columns: 1fr; margin: 0; }
+      .compare-card, .insight-card, .mini-card { box-shadow: none; }
+      .result-bar { grid-template-columns: repeat(3, 1fr); }
+      table { min-width: 0; }
+      th, td { padding: 9px 10px; font-size: 12px; }
+      tr.total-row td { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <div class="hero-inner">
+        <div class="title-row">
+          <div>
+            <div class="eyebrow">Mobile TCO Estimator</div>
+            <h1>휴대폰 TCO 계산기</h1>
+            <p class="subtitle">통신향 개통 vs 자급제 구매 · 24/36개월 총비용 기준으로 비교합니다.</p>
+          </div>
+          <div class="badge">TCO = 2~3년 실제 부담액</div>
+        </div>
+
+        <div class="result-bar">
+          <div class="mini-card winner">
+            <div class="mini-label">최종 추천</div>
+            <div class="mini-value" id="topWinner">-</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-label">절감 효과</div>
+            <div class="mini-value" id="topDiff">0원</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-label">비교 기간</div>
+            <div class="mini-value"><span id="topMonths">24</span>개월</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="grid">
+      <article class="section">
+        <div class="section-head">
+          <h2 class="section-title">통신향 제품</h2>
+          <p class="section-desc">공통지원금 또는 선택약정 25% 중 하나를 선택하고, 최종 할부원금·고가요금제 유지기간·할부이자를 반영합니다. 3년 비교 시 25개월차 이후 선택약정 25%도 반영합니다.</p>
+        </div>
+        <div class="section-body">
+          <div class="field full">
+            <label>개통 혜택 선택 <span class="hint">동시 적용 불가</span></label>
+            <div class="segmented" data-segment="telBenefitType">
+              <button type="button" class="active" data-value="subsidy">공통지원금</button>
+              <button type="button" data-value="contract">선택약정 25%</button>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="field">
+              <label>출고가</label>
+              <div class="input-wrap"><input id="telPrice" inputmode="numeric" value="1155000"><span class="suffix">원</span></div>
+            </div>
+            <div class="field">
+              <label>공통지원금</label>
+              <div class="input-wrap"><input id="telSubsidy" inputmode="numeric" value="300000"><span class="suffix">원</span></div>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="field">
+              <label>추가지원금</label>
+              <div class="input-wrap"><input id="telExtraSupport" inputmode="numeric" value="45000"><span class="suffix">원</span></div>
+            </div>
+            <div class="field">
+              <label>통신사 할부이자 총액 <span class="hint">연 5.9% 자동계산</span></label>
+              <div class="input-wrap"><input id="telInterest" inputmode="numeric" value="0" disabled><span class="suffix">원</span></div>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="field">
+              <label>고가요금제 월요금</label>
+              <div class="input-wrap"><input id="telHighPlan" inputmode="numeric" value="109000"><span class="suffix">원</span></div>
+            </div>
+            <div class="field">
+              <label>고가요금제 유지개월</label>
+              <div class="input-wrap"><input id="telHighMonths" inputmode="numeric" value="6"><span class="suffix">개월</span></div>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="field">
+              <label>이후 변경 요금제</label>
+              <div class="input-wrap"><input id="telAfterPlan" inputmode="numeric" value="69000"><span class="suffix">원</span></div>
+            </div>
+            <div class="field">
+              <label>월 결합/카드 할인</label>
+              <div class="input-wrap"><input id="telMonthlyDiscount" inputmode="numeric" value="0"><span class="suffix">원</span></div>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="field">
+              <label>최종 할부원금 <span class="hint">자동계산</span></label>
+              <div class="input-wrap"><input id="telFinalPrincipal" inputmode="numeric" value="0" disabled><span class="suffix">원</span></div>
+            </div>
+            <div class="field">
+              <label>비교 기간 선택</label>
+              <div class="input-wrap">
+                <select id="periodMonths">
+                  <option value="24" selected>24개월 기준</option>
+                  <option value="36">36개월 기준</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="section">
+        <div class="section-head">
+          <h2 class="section-title">자급제 제품</h2>
+          <p class="section-desc">자급제 구매가는 직접 입력하고, 현재 사용 요금제를 기준으로 선택약정 25% 적용 여부를 비교합니다.</p>
+        </div>
+        <div class="section-body">
+          <div class="field full">
+            <label>자급제 선택약정 적용 여부 <span class="hint">요금 25% 할인</span></label>
+            <div class="segmented" data-segment="unlockedContract">
+              <button type="button" class="active" data-value="yes">적용</button>
+              <button type="button" data-value="no">미적용</button>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="field">
+              <label>자급제 구매가</label>
+              <div class="input-wrap"><input id="unlockedPrice" inputmode="numeric" value="1250000"><span class="suffix">원</span></div>
+            </div>
+            <div class="field">
+              <label>카드/쿠폰/포인트 할인</label>
+              <div class="input-wrap"><input id="unlockedDiscount" inputmode="numeric" value="150000"><span class="suffix">원</span></div>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="field">
+              <label>중고보상/기존폰 판매</label>
+              <div class="input-wrap"><input id="unlockedTradeIn" inputmode="numeric" value="0"><span class="suffix">원</span></div>
+            </div>
+            <div class="field">
+              <label>현재 사용 요금제</label>
+              <div class="input-wrap"><input id="unlockedPlan" inputmode="numeric" value="55000"><span class="suffix">원</span></div>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="field">
+              <label>월 결합/카드 할인</label>
+              <div class="input-wrap"><input id="unlockedMonthlyDiscount" inputmode="numeric" value="0"><span class="suffix">원</span></div>
+            </div>
+            <div class="field">
+              <label>메모용 모델명</label>
+              <div class="input-wrap"><input id="modelMemo" type="text" value="Galaxy / iPhone" style="padding-right:14px"></div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="summary">
+      <article class="compare-card">
+        <div class="card-head">
+          <h2>상세 비교표</h2>
+          <div class="btn-row">
+            <button type="button" class="reset-btn" id="resetBtn">초기화</button>
+            <button type="button" class="print-btn" onclick="window.print()">요약 인쇄</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>비교 항목</th>
+                <th>통신향</th>
+                <th>자급제</th>
+                <th>비고</th>
+              </tr>
+            </thead>
+            <tbody id="compareBody"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="insight-card">
+        <div class="card-head">
+          <h2>최종 추천</h2>
+        </div>
+        <div class="insight-body">
+          <div class="big-diff" id="diffBox">
+            <div class="diff-label" id="diffLabel">최종추천</div>
+            <div class="diff-value" id="diffValue">-</div>
+          </div>
+          <div class="saving-card" id="savingCard">
+            <div class="saving-label" id="savingLabel">예상 절감금액</div>
+            <div class="saving-value" id="savingValue">0원</div>
+            <div class="saving-sub" id="savingSub">유리한 조건의 절감액을 표시합니다.</div>
+          </div>
+          <div class="message" id="messageBox">입력값을 기준으로 24개월 총비용을 계산합니다.</div>
+          <div class="check-list">
+            <div class="check-item"><span class="check-dot">✓</span><span>통신향은 공통지원금과 선택약정 25%가 동시에 적용되지 않도록 계산됩니다.</span></div>
+            <div class="check-item"><span class="check-dot">✓</span><span>통신사 할부이자는 최종 할부원금 기준으로 연 5.9%가 자동 계산되며, 3년 비교여도 단말 할부는 24개월 기준으로 반영됩니다.</span></div>
+            <div class="check-item"><span class="check-dot">✓</span><span>자급제는 직접 입력한 구매가에서 카드/쿠폰/포인트와 중고보상금을 차감합니다.</span></div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <div class="note">
+      이 계산기는 상담용 TCO 비교 도구입니다. 실제 청구금액은 통신사 정책, 요금제 변경 가능 시점, 제휴카드 실적 조건, 부가서비스 여부에 따라 달라질 수 있습니다.
+    </div>
+  </main>
+
+  <script>
+    const state = {
+      telBenefitType: 'subsidy',
+      unlockedContract: 'yes'
+    };
+
+    const TELECOM_INSTALLMENT_ANNUAL_RATE = 0.059;
+    const DEVICE_INSTALLMENT_MONTHS = 24;
+
+    const ids = [
+      'telPrice','telSubsidy','telExtraSupport','telFinalPrincipal','telInterest','telHighPlan','telHighMonths','telAfterPlan',
+      'telMonthlyDiscount','periodMonths','unlockedPrice','unlockedDiscount','unlockedTradeIn',
+      'unlockedPlan','unlockedMonthlyDiscount','modelMemo'
+    ];
+
+    const $ = (id) => document.getElementById(id);
+
+    function onlyNumber(value) {
+      const n = Number(String(value).replace(/[^0-9.-]/g, ''));
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function money(value) {
+      const n = Math.round(value || 0);
+      const sign = n < 0 ? '-' : '';
+      return sign + Math.abs(n).toLocaleString('ko-KR') + '원';
+    }
+
+    function monthText(value) {
+      return Math.round(value || 0).toLocaleString('ko-KR') + '개월';
+    }
+
+    function clampMin(value, min = 0) {
+      return Math.max(min, value || 0);
+    }
+
+    function calculateInstallmentInterest(principal, months, annualRate = TELECOM_INSTALLMENT_ANNUAL_RATE) {
+      const safePrincipal = clampMin(principal);
+      const safeMonths = clampMin(months, 1);
+      if (!safePrincipal || !safeMonths) return 0;
+
+      // 통신사 단말 할부는 남은 할부원금에 월 단위 이자가 붙는 구조에 가깝게 계산합니다.
+      // 단순히 할부원금 × 5.9%가 아니라, 매월 줄어드는 잔여원금을 기준으로 총 이자를 합산합니다.
+      const monthlyPrincipal = safePrincipal / safeMonths;
+      let totalInterest = 0;
+      for (let month = 0; month < safeMonths; month += 1) {
+        const remainingPrincipal = safePrincipal - (monthlyPrincipal * month);
+        totalInterest += remainingPrincipal * (annualRate / 12);
+      }
+      return Math.round(totalInterest);
+    }
+
+    function syncDisabledFields() {
+      const isSubsidy = state.telBenefitType === 'subsidy';
+      $('telSubsidy').disabled = !isSubsidy;
+    }
+
+    function getInputs() {
+      const periodMonths = clampMin(onlyNumber($('periodMonths').value), 1);
+      const highMonthsRaw = clampMin(onlyNumber($('telHighMonths').value), 0);
+      const highMonths = Math.min(highMonthsRaw, periodMonths);
+      const afterMonths = Math.max(periodMonths - highMonths, 0);
+      const telInstallmentMonths = Math.min(periodMonths, DEVICE_INSTALLMENT_MONTHS);
+
+      return {
+        periodMonths,
+        highMonths,
+        afterMonths,
+        telInstallmentMonths,
+        telPrice: clampMin(onlyNumber($('telPrice').value)),
+        telSubsidy: state.telBenefitType === 'subsidy' ? clampMin(onlyNumber($('telSubsidy').value)) : 0,
+        telExtraSupport: clampMin(onlyNumber($('telExtraSupport').value)),
+        telInterest: 0,
+        telHighPlan: clampMin(onlyNumber($('telHighPlan').value)),
+        telAfterPlan: clampMin(onlyNumber($('telAfterPlan').value)),
+        telMonthlyDiscount: clampMin(onlyNumber($('telMonthlyDiscount').value)),
+        unlockedPrice: clampMin(onlyNumber($('unlockedPrice').value)),
+        unlockedDiscount: clampMin(onlyNumber($('unlockedDiscount').value)),
+        unlockedTradeIn: clampMin(onlyNumber($('unlockedTradeIn').value)),
+        unlockedPlan: clampMin(onlyNumber($('unlockedPlan').value)),
+        unlockedMonthlyDiscount: clampMin(onlyNumber($('unlockedMonthlyDiscount').value)),
+      };
+    }
+
+    function calculate() {
+      const i = getInputs();
+
+      const telDeviceBeforeInterest = clampMin(i.telPrice - i.telSubsidy - i.telExtraSupport);
+      const telInterest = calculateInstallmentInterest(telDeviceBeforeInterest, i.telInstallmentMonths);
+      const telDeviceTotal = clampMin(telDeviceBeforeInterest + telInterest);
+
+      let telPlanRaw = 0;
+      let telContractDiscount = 0;
+      let telPost24ContractDiscount = 0;
+      let telOpeningContractDiscount = 0;
+
+      for (let month = 1; month <= i.periodMonths; month += 1) {
+        const plan = month <= i.highMonths ? i.telHighPlan : i.telAfterPlan;
+        telPlanRaw += plan;
+
+        let discount = 0;
+        if (state.telBenefitType === 'contract') {
+          discount = plan * 0.25;
+        } else if (month > DEVICE_INSTALLMENT_MONTHS) {
+          // 공통지원금 개통 후 24개월 약정이 끝난 뒤, 25개월차부터 선택약정 25%를 받을 수 있다는 가정입니다.
+          discount = plan * 0.25;
+        }
+
+        if (month > DEVICE_INSTALLMENT_MONTHS) telPost24ContractDiscount += discount;
+        else telOpeningContractDiscount += discount;
+        telContractDiscount += discount;
+      }
+
+      const telMonthlyDiscountTotal = i.telMonthlyDiscount * i.periodMonths;
+      const telPlanTotal = clampMin(telPlanRaw - telContractDiscount - telMonthlyDiscountTotal);
+      const telTco = telDeviceTotal + telPlanTotal;
+
+      const unlockedDeviceTotal = clampMin(i.unlockedPrice - i.unlockedDiscount - i.unlockedTradeIn);
+      const unlockedPlanRaw = i.unlockedPlan * i.periodMonths;
+      const unlockedContractDiscount = state.unlockedContract === 'yes' ? unlockedPlanRaw * 0.25 : 0;
+      const unlockedMonthlyDiscountTotal = i.unlockedMonthlyDiscount * i.periodMonths;
+      const unlockedPlanTotal = clampMin(unlockedPlanRaw - unlockedContractDiscount - unlockedMonthlyDiscountTotal);
+      const unlockedTco = unlockedDeviceTotal + unlockedPlanTotal;
+
+      const diff = Math.abs(telTco - unlockedTco);
+      const winner = diff < 10000 ? '비슷함' : (telTco < unlockedTco ? '통신향' : '자급제');
+      const telMonthlyAvg = telTco / i.periodMonths;
+      const unlockedMonthlyAvg = unlockedTco / i.periodMonths;
+
+      return {
+        ...i,
+        telDeviceBeforeInterest,
+        telInterest,
+        telDeviceTotal,
+        telPlanRaw,
+        telContractDiscount,
+        telOpeningContractDiscount,
+        telPost24ContractDiscount,
+        telMonthlyDiscountTotal,
+        telPlanTotal,
+        telTco,
+        unlockedDeviceTotal,
+        unlockedPlanRaw,
+        unlockedContractDiscount,
+        unlockedMonthlyDiscountTotal,
+        unlockedPlanTotal,
+        unlockedTco,
+        diff,
+        winner,
+        telMonthlyAvg,
+        unlockedMonthlyAvg
+      };
+    }
+
+    function render() {
+      syncDisabledFields();
+      const r = calculate();
+
+      const winnerLabel = r.winner === '통신향' ? '📱 통신사 추천' : (r.winner === '자급제' ? '🛒 자급제 추천' : '⚖️ 조건 재확인');
+      const winnerDetail = r.winner === '통신향' ? '통신사 개통' : (r.winner === '자급제' ? '자급제 구매' : '비슷함');
+      const savingDisplay = r.winner === '비슷함' ? money(r.diff) : '-' + money(r.diff);
+      const savingLabel = r.winner === '통신향'
+        ? `통신사 개통 시 ${r.periodMonths}개월 예상 절감금액`
+        : (r.winner === '자급제'
+          ? `자급제 구매 시 ${r.periodMonths}개월 예상 절감금액`
+          : `${r.periodMonths}개월 기준 비용 차이`);
+
+      $('topWinner').textContent = winnerLabel;
+      $('topDiff').textContent = savingDisplay;
+      $('topMonths').textContent = r.periodMonths;
+      $('diffLabel').textContent = '최종추천';
+      $('diffValue').textContent = winnerLabel;
+      $('savingLabel').textContent = savingLabel;
+      $('savingValue').textContent = savingDisplay;
+      $('savingSub').textContent = r.winner === '비슷함'
+        ? '절감 차이가 크지 않아 요금제 자유도와 개통 편의성을 함께 보는 것이 좋습니다.'
+        : `${winnerDetail} 선택 시 총비용에서 줄어드는 금액입니다.`;
+      $('telFinalPrincipal').value = money(r.telDeviceBeforeInterest).replace('원', '');
+      $('telInterest').value = money(r.telInterest).replace('원', '');
+
+      const diffBox = $('diffBox');
+      diffBox.classList.remove('tel', 'neutral');
+      if (r.winner === '통신향') diffBox.classList.add('tel');
+      if (r.winner === '비슷함') diffBox.classList.add('neutral');
+
+      let message = '';
+      if (r.winner === '자급제') {
+        message = `최종추천은 자급제 구매입니다. ${r.periodMonths}개월 기준 총비용을 ${savingDisplay} 줄일 수 있습니다. 통신향은 단말 혜택이 있어도 고가요금제 유지 비용과 연 5.9% 기준 통신사 할부이자를 반영하면 총비용이 더 높아질 수 있습니다.`;
+      } else if (r.winner === '통신향') {
+        message = `최종추천은 통신사 개통입니다. ${r.periodMonths}개월 기준 총비용을 ${savingDisplay} 줄일 수 있습니다. 공통지원금 또는 선택약정 혜택이 요금제 부담과 연 5.9% 기준 할부이자를 감안해도 더 크게 작용했습니다.`;
+      } else {
+        message = `최종추천은 조건 재확인입니다. 두 방식의 ${r.periodMonths}개월 총비용 차이가 크지 않습니다. 이 경우에는 요금제 자유도, 카드 할인 조건, 개통 편의성까지 함께 보는 것이 좋습니다.`;
+      }
+      if (r.periodMonths > DEVICE_INSTALLMENT_MONTHS) {
+        message += ' 3년 기준에서는 통신향의 단말 할부가 24개월에 종료되고, 25개월차 이후 선택약정 25% 할인 가능성을 함께 반영했습니다.';
+      }
+      $('messageBox').textContent = message;
+
+      const telBenefitLabel = state.telBenefitType === 'subsidy' ? '공통지원금 적용' : '선택약정 25% 적용';
+      const unlockedContractLabel = state.unlockedContract === 'yes' ? '선택약정 25% 적용' : '선택약정 미적용';
+
+      const rows = [
+        ['혜택 방식', telBenefitLabel, unlockedContractLabel, '공통지원금과 선택약정은 동시 적용 불가'],
+        ['단말 할부기간', monthText(r.telInstallmentMonths), '-', r.periodMonths > DEVICE_INSTALLMENT_MONTHS ? '3년 비교여도 단말 할부는 24개월 기준' : '24개월 할부 기준'],
+        ['최종 할부원금', money(r.telDeviceBeforeInterest), money(r.unlockedDeviceTotal), '통신향은 출고가에서 공통지원금+추가지원금 차감 후 금액'],
+        ['통신사 할부이자', money(r.telInterest), '-', `할부원금 기준 연 5.9% · ${r.telInstallmentMonths}개월 자동계산`],
+        ['단말 실부담금', money(r.telDeviceTotal), money(r.unlockedDeviceTotal), '통신향은 할부이자 포함'],
+        ['공통지원금 차감', money(r.telSubsidy), '-', state.telBenefitType === 'subsidy' ? '통신향 단말가에서 차감' : '선택약정 선택으로 미반영'],
+        ['선택약정 할인 총액', money(r.telContractDiscount), money(r.unlockedContractDiscount), state.telBenefitType === 'subsidy' && r.periodMonths > DEVICE_INSTALLMENT_MONTHS ? '통신향은 25개월차 이후 선택약정 반영' : '요금제 25% 할인 기준'],
+        ...(r.periodMonths > DEVICE_INSTALLMENT_MONTHS ? [[
+          '통신향 25개월차 이후 선택약정',
+          money(r.telPost24ContractDiscount),
+          '-',
+          state.telBenefitType === 'subsidy' ? '공통지원금 약정 종료 후 할인 반영' : '선택약정 갱신 구간 포함'
+        ]] : []),
+        ['고가요금제 유지기간', monthText(r.highMonths), '-', '통신향 개통 조건 반영'],
+        ['이후 요금제 적용기간', monthText(r.afterMonths), '-', '전체 기간에서 유지기간 제외'],
+        ['요금제 총액', money(r.telPlanTotal), money(r.unlockedPlanTotal), '선택약정/월할인 반영 후'],
+        ['월평균 비용', money(r.telMonthlyAvg), money(r.unlockedMonthlyAvg), `${r.periodMonths}개월 총비용 ÷ ${r.periodMonths}`],
+        [`${r.periodMonths}개월 TCO`, money(r.telTco), money(r.unlockedTco), '단말 + 요금제 총액'],
+      ];
+
+      $('compareBody').innerHTML = rows.map((row) => {
+        const isTotal = row[0].includes('TCO');
+        return `<tr class="${isTotal ? 'total-row' : ''}">
+          <td>${row[0]}</td>
+          <td class="${r.winner === '통신향' && isTotal ? 'good' : ''}">${row[1]}</td>
+          <td class="${r.winner === '자급제' && isTotal ? 'good' : ''}">${row[2]}</td>
+          <td>${row[3]}</td>
+        </tr>`;
+      }).join('');
+
+      saveLocal();
+    }
+
+    function formatInputOnBlur(e) {
+      if (e.target.type === 'text' || e.target.tagName === 'SELECT') return;
+      const value = onlyNumber(e.target.value);
+      e.target.value = value ? Math.round(value).toLocaleString('ko-KR') : '0';
+    }
+
+    function parseInputOnFocus(e) {
+      if (e.target.type === 'text' || e.target.tagName === 'SELECT') return;
+      e.target.value = String(onlyNumber(e.target.value) || '');
+      setTimeout(() => e.target.select(), 0);
+    }
+
+    function saveLocal() {
+      const data = { state: { ...state }, inputs: {} };
+      ids.forEach(id => data.inputs[id] = $(id).value);
+      localStorage.setItem('phoneTcoCalculatorV2', JSON.stringify(data));
+    }
+
+    function loadLocal() {
+      try {
+        const raw = localStorage.getItem('phoneTcoCalculatorV2');
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        Object.assign(state, data.state || {});
+        ids.forEach(id => {
+          if (data.inputs && data.inputs[id] !== undefined) $(id).value = data.inputs[id];
+        });
+        document.querySelectorAll('[data-segment]').forEach(group => {
+          const key = group.dataset.segment;
+          group.querySelectorAll('button').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.value === state[key]);
+          });
+        });
+      } catch (err) {
+        console.warn('localStorage load failed', err);
+      }
+    }
+
+    function resetAll() {
+      localStorage.removeItem('phoneTcoCalculatorV2');
+      location.reload();
+    }
+
+    document.querySelectorAll('[data-segment]').forEach(group => {
+      group.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'BUTTON') return;
+        const key = group.dataset.segment;
+        state[key] = e.target.dataset.value;
+        group.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+        render();
+      });
+    });
+
+    ids.forEach(id => {
+      const el = $(id);
+      el.addEventListener('input', render);
+      el.addEventListener('focus', parseInputOnFocus);
+      el.addEventListener('blur', formatInputOnBlur);
+    });
+
+    $('resetBtn').addEventListener('click', resetAll);
+
+    loadLocal();
+    render();
+  </script>
+</body>
+</html>
